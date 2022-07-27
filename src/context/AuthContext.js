@@ -18,10 +18,13 @@ export const AuthProvider = ({children}) => {
     let [loading, setLoading] = useState(true)
     
     useEffect(() => {
+        if (loading) {
+            updateToken()
+        }
+
         let fiveMinutes = 1000 * 60 * 5
         let interval = setInterval(() => {
             if (authTokens) {
-                console.log(authTokens)
                 updateToken()
             }
         }, fiveMinutes)
@@ -50,7 +53,7 @@ export const AuthProvider = ({children}) => {
     }
 
     const updateToken = async () => {
-        axiosAPI.post('auth/token/refresh/', {"refresh": authTokens.refresh})
+        axiosAPI.post('auth/token/refresh/', {"refresh": authTokens?.refresh})
             .then(res => {
                 setAuthTokens(res.data)
                 setUser(jwt_decode(res.data.access))
@@ -60,6 +63,10 @@ export const AuthProvider = ({children}) => {
                 console.error("Update token failed", err)
                 logoutUser()
             })
+
+            if (loading) {
+                setLoading(false)
+            }
     }
 
     let context = {
@@ -69,6 +76,6 @@ export const AuthProvider = ({children}) => {
     }
 
     return <AuthContext.Provider value={context}>
-        {children}
+        {loading ? null : children}
     </AuthContext.Provider>
 }
