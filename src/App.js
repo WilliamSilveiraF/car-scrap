@@ -1,6 +1,6 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { LoginPage, HomePage } from './pages';
+import { LoginPage, HomePage, RegisterPage } from './pages';
 import { Header } from './components';
 import { PrivateRoute } from './utils';
 import { AuthProvider } from './context';
@@ -10,10 +10,11 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <AuthProvider>
-          <Header />
+          { /* <Header /> */ }
           <Routes>
             <Route element={<PrivateRoute><HomePage/></PrivateRoute>} path="/" exact></Route>
-            <Route element={<LoginPage/>} path="/login" />
+            <Route element={<LoginPage/>} path="/login" exact />
+            <Route element={<RegisterPage />} path="/register" exact />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

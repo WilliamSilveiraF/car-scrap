@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;700&display=swap');
+
+.loginPage {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Roboto', sans-serif;
+}
+
+.loginPage-grid {
+    display: grid;
+    text-align: center;
+    width: 350px;
+    row-gap: 12px;
+}
+
+h1 { font-size: 1.5rem; }
+
+span { font-weight: 700;}
