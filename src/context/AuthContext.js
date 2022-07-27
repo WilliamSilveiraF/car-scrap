@@ -11,11 +11,23 @@ export default AuthContext
 export const AuthProvider = ({children}) => {
     const initToken = () => localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null
 
-
     const navigate = useNavigate()
-    
+
     let [user, setUser] = useState(initToken)
     let [authTokens, setAuthTokens] = useState(initToken)
+    let [loading, setLoading] = useState(true)
+    
+    useEffect(() => {
+        let fiveMinutes = 1000 * 60 * 5
+        let interval = setInterval(() => {
+            if (authTokens) {
+                console.log(authTokens)
+                updateToken()
+            }
+        }, fiveMinutes)
+
+        return () => clearInterval(interval)
+    }, [authTokens, loading])
 
     const loginUser = async (event) => {
         event.preventDefault()
@@ -37,11 +49,25 @@ export const AuthProvider = ({children}) => {
         navigate('/login')
     }
 
+    const updateToken = async () => {
+        axiosAPI.post('auth/token/refresh/', {"refresh": authTokens.refresh})
+            .then(res => {
+                setAuthTokens(res.data)
+                setUser(jwt_decode(res.data.access))
+                localStorage.setItem('authTokens', JSON.stringify(res.data))
+            })
+            .catch(err => {
+                console.error("Update token failed", err)
+                logoutUser()
+            })
+    }
+
     let context = {
         user: user,
         loginUser: loginUser,
         logoutUser: logoutUser
     }
+
     return <AuthContext.Provider value={context}>
         {children}
     </AuthContext.Provider>
