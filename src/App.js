@@ -1,9 +1,22 @@
 import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { LoginPage, HomePage } from './pages';
+import { Header } from './components';
+import { PrivateRoute } from './utils';
+import { AuthProvider } from './context';
 
 function App() {
   return (
     <div className="App">
-      <p>Init</p>
+      <BrowserRouter>
+        <AuthProvider>
+          <Header />
+          <Routes>
+            <Route element={<PrivateRoute><HomePage/></PrivateRoute>} path="/" exact></Route>
+            <Route element={<LoginPage/>} path="/login" />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
     </div>
   );
 }
