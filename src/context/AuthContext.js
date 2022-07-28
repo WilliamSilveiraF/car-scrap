@@ -2,6 +2,7 @@ import { createContext, useState, useEffect }  from 'react'
 import jwt_decode from 'jwt-decode'
 import { axiosAPI } from '../utils'
 import { useNavigate } from 'react-router-dom'
+import { validateData } from '../validators'
 
 const AuthContext = createContext()
 
@@ -13,6 +14,7 @@ export const AuthProvider = ({children}) => {
 
     const navigate = useNavigate()
 
+    let [loginErrors, setLoginErrors] = useState([])
     let [user, setUser] = useState(initToken)
     let [authTokens, setAuthTokens] = useState(initToken)
     let [loading, setLoading] = useState(true)
@@ -35,6 +37,10 @@ export const AuthProvider = ({children}) => {
     }, [authTokens, loading])
 
     const loginUser = async (userData) => {
+        const errors = validateData(['username', 'password'], userData)
+        if (errors.length) {
+            return setLoginErrors(errors)
+        }
 
         axiosAPI.post('auth/token/', userData)
             .then(res => {
@@ -54,7 +60,7 @@ export const AuthProvider = ({children}) => {
     }
 
     const updateToken = async () => {
-        console.log("CHAMADO")
+        console.log("REFRESH")
         axiosAPI.post('auth/token/refresh/', {"refresh": authTokens?.refresh})
             .then(res => {
                 setAuthTokens(res.data)
@@ -74,7 +80,8 @@ export const AuthProvider = ({children}) => {
     let context = {
         user: user,
         loginUser: loginUser,
-        logoutUser: logoutUser
+        logoutUser: logoutUser,
+        loginErrors: loginErrors
     }
 
     return <AuthContext.Provider value={context}>

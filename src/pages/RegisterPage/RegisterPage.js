@@ -1,10 +1,11 @@
 
 import './registerPage.css'
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material'
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AuthContext } from '../../context'
 import { axiosAPI } from '../../utils'
+import { validateData } from '../../validators'
+import { einMask, usContactMask } from '../../utils/Mask'
 
 const structureTypes = [['LLC', 'LIMITED LIABILITY COMPANY'],
                         ['SP', 'SOLE PROPRIETORSHIPS'],
@@ -14,15 +15,24 @@ const structureTypes = [['LLC', 'LIMITED LIABILITY COMPANY'],
                         ['ND', 'NOT DEFINED']]
 
 const RegisterPage = () => {
-    //let { user } = useContext(AuthContext)
-
     const [userData, setUserData] = useState()
     const [companyData, setCompanyData] = useState({})
-
+    const [errors, setErrors] = useState([])
     const navigate = useNavigate()
-    
+
     const register = () => {
-        axiosAPI.post('auth/register', {'user': userData, 'company': companyData})
+
+        let errors  = [
+            ...validateData(['username', 'password', 'email'], userData), 
+            ...validateData(['name', 'ein', 'structure', 'cellphone', 'address'], companyData),
+            ...validateData(['zip', 'street', 'city', 'state'], companyData?.address)
+        ]
+        console.log(errors)
+        if (errors.length) {
+            return setErrors(errors)
+        }
+
+        axiosAPI.post('auth/register', {'user': userData, 'company': {...companyData, 'cellphone': companyData.cellphone.replace(/\D/g, '')}})
             .then(res => {
                 window.alert("Account created successfully!")
                 console.log(res.data)
@@ -42,6 +52,7 @@ const RegisterPage = () => {
                 value={userData?.username}
                 onChange={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={errors.includes("username")}
             />
 
             <TextField 
@@ -52,6 +63,7 @@ const RegisterPage = () => {
                 value={userData?.email}
                 onChange={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={errors.includes("email")}
             />
 
             <TextField 
@@ -62,6 +74,7 @@ const RegisterPage = () => {
                 value={userData?.password}
                 onChange={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={errors.includes("password")}
             />
 
             <hr></hr>
@@ -74,19 +87,25 @@ const RegisterPage = () => {
                 value={companyData?.name}
                 onChange={event => setCompanyData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={errors.includes("name")}
             />
 
             <TextField 
                 id="ein" 
-                label="Ein" 
+                label="Employer Identification Number (EIN)" 
                 type="text" 
                 variant="standard"
-                value={companyData?.ein}
+                value={einMask(companyData?.ein)}
+                inputProps={{ maxLength: 10 }}
                 onChange={event => setCompanyData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={errors.includes("ein")}
             />
 
-            <FormControl variant="standard" >
+            <FormControl 
+                variant="standard" 
+                error={errors.includes("structure")}
+            >
                 <InputLabel>Tax Structure</InputLabel>
                 <Select
                     
@@ -108,9 +127,11 @@ const RegisterPage = () => {
                 label="Cellphone" 
                 type="text" 
                 variant="standard"
-                value={companyData?.cellphone}
+                inputProps={{ maxLength: 10 }}
+                value={usContactMask(companyData?.cellphone)}
                 onChange={event => setCompanyData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={errors.includes("cellphone")}
             />
 
             <hr></hr>
@@ -120,8 +141,10 @@ const RegisterPage = () => {
                 type="text" 
                 variant="standard"
                 value={companyData?.address?.zip}
+                inputProps={{ maxLength: 5 }}
                 onChange={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
+                error={errors.includes("zip")}
             />
             <TextField 
                 id="street" 
@@ -131,6 +154,7 @@ const RegisterPage = () => {
                 value={companyData?.address?.street}
                 onChange={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
+                error={errors.includes("street")}
             />
             <TextField 
                 id="city" 
@@ -140,6 +164,7 @@ const RegisterPage = () => {
                 value={companyData?.address?.city}
                 onChange={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
+                error={errors.includes("city")}
             />
             <TextField 
                 id="state" 
@@ -149,6 +174,7 @@ const RegisterPage = () => {
                 value={companyData?.address?.state}
                 onChange={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
                 onBlur={event => setCompanyData(prevData => ({...prevData, address: {...prevData.address, [event.target.id]: event.target.value}}))}
+                error={errors.includes("state")}
             />
             <hr></hr>
             <Button variant="contained" onClick={() => register()} >Register</Button>
