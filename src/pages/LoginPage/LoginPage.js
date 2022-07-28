@@ -7,8 +7,9 @@ import './LoginPage.css'
 
 
 const LoginPage = () => {
-    let { loginUser, user } = useContext(AuthContext)
+    let { loginUser, user, loginErrors } = useContext(AuthContext)
     const [userData, setUserData] = useState({})
+
     const navigate = useNavigate()
 
     if (user) {
@@ -22,12 +23,13 @@ const LoginPage = () => {
 
             <TextField 
                 id="username" 
-                label="Company Id" 
+                label="Username" 
                 type="text" 
                 variant="standard"
                 value={userData.username}
                 onChange={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
                 onBlur={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={loginErrors.includes("username")}
             />
 
             <TextField 
@@ -37,7 +39,8 @@ const LoginPage = () => {
                 autoComplete="current-password" 
                 variant="standard"
                 onChange={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
-                onBlur={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))} 
+                onBlur={event => setUserData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                error={loginErrors.includes("password")}
             />
 
             <Button variant="contained" onClick={() => loginUser(userData)}>Login</Button>
