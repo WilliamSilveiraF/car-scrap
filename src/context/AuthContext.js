@@ -18,8 +18,10 @@ export const AuthProvider = ({children}) => {
     let [loading, setLoading] = useState(true)
     
     useEffect(() => {
-        if (loading) {
+        if (loading && authTokens) {
             updateToken()
+        } else {
+            setLoading(false)
         }
 
         let fiveMinutes = 1000 * 60 * 5
@@ -32,10 +34,9 @@ export const AuthProvider = ({children}) => {
         return () => clearInterval(interval)
     }, [authTokens, loading])
 
-    const loginUser = async (event) => {
-        event.preventDefault()
+    const loginUser = async (userData) => {
 
-        axiosAPI.post('auth/token/', {'username': event.target.username.value, 'password': event.target.password.value})
+        axiosAPI.post('auth/token/', userData)
             .then(res => {
                 setAuthTokens(res.data)
                 setUser(jwt_decode(res.data.access))
@@ -53,6 +54,7 @@ export const AuthProvider = ({children}) => {
     }
 
     const updateToken = async () => {
+        console.log("CHAMADO")
         axiosAPI.post('auth/token/refresh/', {"refresh": authTokens?.refresh})
             .then(res => {
                 setAuthTokens(res.data)
