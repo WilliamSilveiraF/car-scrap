@@ -3,42 +3,57 @@ import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@m
 import React, { useContext, useState } from 'react'
 import { AuthContext } from '../../context'
 import { axiosAPI } from '../../utils'
+import { thousandMask } from '../../utils/Mask'
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 
 const HomePage = () => {
     let { user, logoutUser } = useContext(AuthContext)
-    console.log(user)
-    const [productData, setProductData] = useState({ 'product': 'Product A', 'productAmount': 0 })
+    const [productData, setProductData] = useState({ 
+        product: 'Engine',
+        car_year: '',
+        price: '', 
+        mileage: '',
+        car_part_base64: ''
+    })
+
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+    })
 
     const products = [
-        {"name": "Product A", "price": 21.00, "tax": 0.05 },
-        {"name": "Product B", "price": 32.00, "tax": 0.12 },
-        {"name": "Product C", "price": 14.00, "tax": 0.01 },
-        {"name": "Product D", "price": 102.00, "tax": 0.07 },
-        {"name": "Product E", "price": 203.00, "tax": 0.08 }
+        {"name": "Engine" },
+        {"name": "Transmission" },
+        {"name": "Clutch" },
+        {"name": "Battery" },
+        {"name": "Alternator" },
+        {"name": "Radiator" },
+        {"name": "Axle" },
+        {"name": "Suspension" },
+        {"name": "Brakes" },
+        {"name": "Catalytic Converter" },
+        {"name": "Muffler" },
+        {"name": "Fuel Tank" },
     ]
 
     const order = () => {
-        const product = products.filter(product => product.name === productData.product)[0]
-        axiosAPI.post('invoice/', { ...productData, "userID": user.user_id, "product": product })
-            .then(res => {
-                const link = document.createElement('a')
-                link.href = res.data.base64
-                link.setAttribute('download', `invoice.pdf`)
-                document.body.appendChild(link)
-                link.click()
-                window.alert("Order created successfully!")
-            })
-            .catch(err => {
-                window.alert("Failed to create order.")
-                console.log(err)
-            })
+        console.log(productData)
     }
+    
+    const handleFile = (event) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(event.target.files[0])
+        reader.onload = event => {
+            setProductData(prev => ({ ...prev, car_part_base64: event.target.result }))
+        }
+    }
+
     return <section className='homePage'>
         <div className='homePage-grid'>
-            <h1>Cart</h1>
+            <h1>Register a new car part</h1>
 
             <FormControl variant="standard" >
-                <InputLabel>Product</InputLabel>
+                <InputLabel>Part</InputLabel>
                 <Select
                     id="product"
                     value={productData?.product}
@@ -51,19 +66,34 @@ const HomePage = () => {
                     }
                 </Select>
             </FormControl>
-
             <TextField 
-                id="productAmount" 
-                label="Amount" 
-                type="number"
-                min={0} 
+                id="car_year" 
+                label="Car Year"
                 variant="standard"
-                value={productData?.productAmount}
-                onChange={event => setProductData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
-                onBlur={event => setProductData(prevData => ({...prevData, [event.target.id]: event.target.value}))}
+                value={productData.car_year}
+                inputProps={{ maxLength: 4 }}
+                onChange={event => setProductData(prevData => ({ ...prevData, [event.target.id]: event.target.value.replace(/\D/g, '') }))}
+                onBlur={event => setProductData(prevData => ({...prevData, [event.target.id]: event.target.value.replace(/\D/g, '') }))}
             />
-
-            <Button variant="contained" onClick={() => order()}>Order product</Button>
+            <TextField 
+                id="mileage" 
+                label="Mileage"
+                variant="standard"
+                value={productData.mileage}
+                inputProps={{ maxLength: 7 }}
+                onChange={event => setProductData(prevData => ({ ...prevData, [event.target.id]: thousandMask(event.target.value) }))}
+                onBlur={event => setProductData(prevData => ({...prevData, [event.target.id]: thousandMask(event.target.value) }))}
+            />
+            <TextField 
+                id="price" 
+                label="Price" 
+                variant="standard"
+                value={productData.price}
+                onChange={event => setProductData(prevData => ({ ...prevData, [event.target.id]: event.target.value }))}
+                onBlur={event => setProductData(prevData => ({...prevData, [event.target.id]: formatter.format(event.target.value.replace(/\D/g, ''))}))}
+            />
+            <input type='file' onChange={handleFile} />
+            <Button variant="contained" onClick={() => order()}>REGISTER CAR PART</Button>
             <hr></hr>
             <Button variant="text" onClick={() => logoutUser()}>Logout</Button>
         </div>

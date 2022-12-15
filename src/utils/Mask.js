@@ -19,3 +19,9 @@ export const usContactMask = (value) => {
     }
     return ('(' + x[1] + ') ' + x[2] + '-' + x[3])
 }
+
+export const thousandMask = (value) => value?.length <= 3 
+                                        ? value
+                                        : value
+                                            .replace(/\D/g, '')
+                                            .replace(/^(\d*)(\d{3})/g, "$1.$2")

@@ -18,7 +18,7 @@ const LoginPage = () => {
     
     return <section className='loginPage'>
         <div className='loginPage-grid'>
-            <h1>Log in <span>Will Invoice</span></h1>
+            <h1>Log in <span>Car Scrap</span></h1>
             <h2>or <a href='/register'>Create Account</a></h2>
 
             <TextField 
