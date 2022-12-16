@@ -1,13 +1,56 @@
 import './HomePage.css'
 import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../context'
 import { axiosAPI } from '../../utils'
 import { thousandMask } from '../../utils/Mask'
-import AttachFileIcon from '@mui/icons-material/AttachFile';
+import Web3 from 'web3'
+
+const products = [
+    {"name": "Engine" },
+    {"name": "Transmission" },
+    {"name": "Clutch" },
+    {"name": "Battery" },
+    {"name": "Alternator" },
+    {"name": "Radiator" },
+    {"name": "Axle" },
+    {"name": "Suspension" },
+    {"name": "Brakes" },
+    {"name": "Catalytic Converter" },
+    {"name": "Muffler" },
+    {"name": "Fuel Tank" },
+]
+
+const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+})
 
 const HomePage = () => {
+    const web3 = new Web3(window.ethereum)
+    const [metaMaskAcc, setMetaMaskAcc] = useState('')
     let { user, logoutUser } = useContext(AuthContext)
+
+    const data = require('./data.json')
+    useEffect(() => {
+        try {
+            let provider = window.ethereum;
+            if (typeof provider !== "undefined") {
+                provider
+                    .request({ method: "eth_requestAccounts" })
+                    .then((accounts) => {
+                        setMetaMaskAcc(accounts[0])
+                        console.log('accounts', accounts[0])
+                    })
+            } else {
+                logoutUser()
+                window.alert('MetaMask is not installed!!!')
+            }
+        } catch (err) {
+            console.error(err)
+        }
+    }, [])
+
     const [productData, setProductData] = useState({ 
         product: 'Engine',
         car_year: '',
@@ -16,28 +59,18 @@ const HomePage = () => {
         car_part_base64: ''
     })
 
-    const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    })
-
-    const products = [
-        {"name": "Engine" },
-        {"name": "Transmission" },
-        {"name": "Clutch" },
-        {"name": "Battery" },
-        {"name": "Alternator" },
-        {"name": "Radiator" },
-        {"name": "Axle" },
-        {"name": "Suspension" },
-        {"name": "Brakes" },
-        {"name": "Catalytic Converter" },
-        {"name": "Muffler" },
-        {"name": "Fuel Tank" },
-    ]
-
-    const order = () => {
-        console.log(productData)
+    const order = async () => {
+        try {
+            let newContract = new web3.eth.Contract(data.abi)
+                                .deploy({ data: data.bytecode.object })
+                                .send({ from: metaMaskAcc })
+                                .then(res => {
+                                    console.log('res', res._address)
+                                })
+            console.log(newContract)
+        } catch (err) {
+            console.log('--err', err)
+        }
     }
     
     const handleFile = (event) => {
@@ -46,6 +79,10 @@ const HomePage = () => {
         reader.onload = event => {
             setProductData(prev => ({ ...prev, car_part_base64: event.target.result }))
         }
+    }
+
+    if (!metaMaskAcc) {
+        return <p>Carregando...</p>
     }
 
     return <section className='homePage'>
