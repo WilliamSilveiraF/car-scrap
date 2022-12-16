@@ -18,5 +18,10 @@
 
 h1 { font-size: 1.5rem; }
 
+.span_section {
+    cursor: pointer;
+}
 
-
+.span_active {
+    color: #76b5c5
+}
