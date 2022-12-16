@@ -114,7 +114,7 @@ export default function RegisterNewCarPart({ metaMaskAcc }) {
             variant="standard"
             value={productData.serialnumber}
             onChange={event => setProductData(prevData => ({ ...prevData, [event.target.id]: event.target.value }))}
-            onBlur={event => setProductData(prevData => ({...prevData, [event.target.id]: event.target.value.replace(/\D/g, '') }))}
+            onBlur={event => setProductData(prevData => ({...prevData, [event.target.id]: event.target.value }))}
         />
         <input type='file' onChange={handleFile} />
         <Button variant="contained" onClick={() => order()}>REGISTER CAR PART</Button>
